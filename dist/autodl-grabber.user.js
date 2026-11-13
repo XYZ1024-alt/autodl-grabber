@@ -3,6 +3,7 @@
 // @namespace    autodl-grabber
 // @version      0.2.0
 // @description  监测 AutoDL 空闲 GPU，在满足条件时自动创建并开机一台按量计费实例（支持数据盘扩容）。
+// @license      MIT
 // @match        https://www.autodl.com/create
 // @match        https://www.autodl.com/create/*
 // @exclude      https://www.autodl.com/create/pro*

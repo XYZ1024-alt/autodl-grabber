@@ -2,6 +2,7 @@
   "name": "autodl-grabber",
   "version": "0.2.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "description": "Tampermonkey userscript that watches AutoDL for a matching GPU host and creates exactly one instance.",
   "scripts": {

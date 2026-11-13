@@ -188,3 +188,7 @@ pnpm build       # 生成 dist/autodl-grabber.user.js
 ```
 
 目录：`src/domain`（筛选与配置规则）、`src/autodl`（接口适配）、`src/runner`（任务状态机）、`src/app` 与 `src/ui`（面板）；`test/simulator.ts` 是测试用的模拟平台，不会打进成品。
+
+## 许可证
+
+[MIT](LICENSE)
