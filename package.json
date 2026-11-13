@@ -1,0 +1,23 @@
+{
+  "name": "autodl-grabber",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Tampermonkey userscript that watches AutoDL for a matching GPU host and creates exactly one instance.",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "format": "biome check --write ."
+  },
+  "dependencies": {
+    "valibot": "^1.5.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.7",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}
