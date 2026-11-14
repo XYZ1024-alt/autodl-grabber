@@ -115,11 +115,11 @@ export const createApp = (deps: AppDeps): App => {
       // The runner enters "starting" synchronously, so a second click finds the app no longer idle.
       if (!idle()) return
       if (state.catalog === null) {
-        set({ errors: ['地区、GPU 和镜像列表尚未加载，请先点击“刷新列表”'] })
+        set({ errors: ['列表尚未加载，请点击“刷新列表”'] })
         return
       }
       if (!deps.tabLockSupported) {
-        set({ errors: ['当前浏览器不支持 Web Locks，无法保证多标签页不重复创建，已拒绝启动'] })
+        set({ errors: ['当前浏览器不支持 Web Locks，无法防止多个标签页重复创建，未启动'] })
         return
       }
       const built = buildPlan(state.draft, state.catalog)
@@ -140,7 +140,7 @@ export const createApp = (deps: AppDeps): App => {
     clearPendingCreate: () => {
       if (!idle()) return
       pending.clear()
-      log.add('warn', '已按你的确认清除“未确认的创建请求”标记')
+      log.add('warn', '已清除未确认的创建请求标记')
       set({ pendingCreate: false, errors: [] })
     },
   }

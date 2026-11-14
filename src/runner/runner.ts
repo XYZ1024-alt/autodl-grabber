@@ -548,10 +548,7 @@ export const createRunner = ({ api, pending, lock, log, notify }: RunnerDeps): R
     for (;;) {
       if (task.stopRequested) {
         finish(task, 'stopped', {
-          headline:
-            task.createsSent > 0
-              ? '已停止。已发出的创建请求经核对没有生成实例。'
-              : '已停止。没有发出创建请求，没有创建实例。',
+          headline: task.createsSent > 0 ? '已发出的创建请求经核对没有生成实例。' : '未创建实例。',
           instance: null,
           machine: null,
           quote: null,
@@ -564,7 +561,7 @@ export const createRunner = ({ api, pending, lock, log, notify }: RunnerDeps): R
         await task.gate.wait()
         continue
       }
-      set({ phase: 'monitoring', detail: `监测中，每 ${plan.intervalMs / 1000} 秒检查一次` })
+      set({ phase: 'monitoring', detail: `每 ${plan.intervalMs / 1000} 秒检查一次` })
       const result = await poll(task)
       if (result === 'finished') return
       if (result === 'rest' && !task.stopRequested && task.pauseReason === null)
@@ -578,7 +575,7 @@ export const createRunner = ({ api, pending, lock, log, notify }: RunnerDeps): R
     if (stored === null) return null
     const fresh = instances.filter((instance) => !stored.knownInstanceIds.includes(instance.uuid))
     if (fresh.length > 0)
-      return `上一次任务发出的创建请求可能已成功：实例列表中出现了新实例 ${fresh.map((instance) => instance.uuid).join('、')}（可能正在计费）。请先到控制台核对，确认后点击“清除核对标记”再启动。`
+      return `上一次任务发出的创建请求可能已成功：实例列表中出现了新实例 ${fresh.map((instance) => instance.uuid).join('、')}（可能正在计费）。请先到控制台核对，再点击“我已核对，清除标记”后启动。`
     const remaining = PENDING_WINDOW_MS - (Date.now() - stored.sentAt)
     if (remaining > 0)
       return `上一次创建请求的结果仍在核对期内，请约 ${Math.ceil(remaining / 1000)} 秒后再启动`
@@ -588,9 +585,10 @@ export const createRunner = ({ api, pending, lock, log, notify }: RunnerDeps): R
 
   const start = async (plan: Plan): Promise<string | null> => {
     if (ACTIVE_PHASES.includes(state.phase)) return '任务已在运行中'
-    set({ phase: 'starting', detail: '正在启动', polls: 0, outcome: null })
+    set({ phase: 'starting', detail: '', polls: 0, outcome: null })
     const refuse = (message: string) => {
-      set({ phase: 'idle', detail: message })
+      // The panel shows the reason as a start error; repeating it as the status would say it twice.
+      set({ phase: 'idle', detail: '' })
       log.add('warn', `未能启动：${message}`)
       return message
     }

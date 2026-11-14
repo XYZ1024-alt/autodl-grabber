@@ -3,15 +3,7 @@ import { MAX_INTERVAL_SEC, MIN_INTERVAL_SEC } from '../domain/config'
 import type { Catalog, ImageKind } from '../domain/types'
 import type { Log } from '../runner/log'
 import { h } from './dom'
-import {
-  EXPAND_FEE_NOTE,
-  EXPAND_MEANING,
-  EXPAND_RULES,
-  outcomePairs,
-  type Pair,
-  PHASE_LABELS,
-  START_NOTICE,
-} from './format'
+import { EXPAND_MEANING, EXPAND_RULES, outcomePairs, type Pair, PHASE_LABELS, START_NOTICE } from './format'
 import { STYLES } from './styles'
 
 /** An empty box is "not a number", never a silent 0. */
@@ -99,6 +91,11 @@ export const mountPanel = (app: App, log: Log, hostId: string, startCollapsed: b
     on: { click: () => (app.getState().runner.phase === 'paused' ? app.resume() : app.pause()) },
   })
   const stopButton = h('button', { class: 'stop', text: '停止', on: { click: () => app.stop() } })
+  const startNotice = h('div', {
+    class: 'hint warn',
+    attrs: { style: 'margin-top:12px' },
+    text: START_NOTICE,
+  })
   const status = h('div')
   const logBox = h('div', { class: 'log' })
   panel.append(
@@ -106,7 +103,7 @@ export const mountPanel = (app: App, log: Log, hostId: string, startCollapsed: b
     h('div', { class: 'body' }, [
       form,
       errors,
-      h('div', { class: 'hint warn', attrs: { style: 'margin-top:12px' }, text: START_NOTICE }),
+      startNotice,
       h('div', { class: 'actions', attrs: { style: 'margin-top:6px' } }, [
         startButton,
         pauseButton,
@@ -137,7 +134,7 @@ export const mountPanel = (app: App, log: Log, hostId: string, startCollapsed: b
       input.checked = state.draft.gpuNames.includes(name)
       return h('label', { class: 'check' }, [input, label])
     }
-    return field('GPU 型号（可多选，任一型号有货即可）', [
+    return field('GPU 型号', [
       h('div', { class: 'box grid' }, [
         ...stale.map((name) => checkbox(name, `${name}（已不存在）`)),
         ...known.map((name) => checkbox(name, name)),
@@ -175,7 +172,7 @@ export const mountPanel = (app: App, log: Log, hostId: string, startCollapsed: b
       ])
     }
     const others = catalog.regions.filter((region) => !selected.includes(region.id))
-    return field('地区（勾选后按序号决定优先级，1 最优先）', [
+    return field('地区（序号越小越优先）', [
       h('div', { class: 'box' }, [...selected.map(row), ...others.map((region) => row(region.id, -1))]),
     ])
   }
@@ -186,9 +183,9 @@ export const mountPanel = (app: App, log: Log, hostId: string, startCollapsed: b
     const known = images.some((image) => image.uuid === imageUuid)
     const placeholder =
       images.length === 0
-        ? '（没有可用镜像）'
+        ? '没有可用镜像'
         : imageUuid !== '' && !known
-          ? '原先选择的镜像已不存在，请重新选择'
+          ? '原镜像已不存在，请重新选择'
           : '请选择镜像'
     return field('镜像', [
       h('div', { class: 'row' }, [
@@ -208,10 +205,6 @@ export const mountPanel = (app: App, log: Log, hostId: string, startCollapsed: b
           (uuid) => app.updateDraft({ imageUuid: uuid }),
         ),
       ]),
-      h('div', {
-        class: 'hint',
-        text: '官方镜像是 AutoDL 的基础镜像；自定义镜像是你在“我的镜像”里保存的镜像。镜像的 CUDA 版本与主机不兼容时会跳过该主机。',
-      }),
     ])
   }
 
@@ -223,37 +216,33 @@ export const mountPanel = (app: App, log: Log, hostId: string, startCollapsed: b
         h('div', { class: 'field' }, [
           h('div', {
             class: state.catalogError === null ? 'hint' : 'danger',
-            text:
-              state.catalogError === null
-                ? '正在读取地区、GPU 和镜像列表…'
-                : `读取列表失败：${state.catalogError}`,
+            text: state.catalogError === null ? '正在加载列表…' : `读取列表失败：${state.catalogError}`,
           }),
         ]),
       )
     } else {
       children.push(
         gpuField(state, catalog),
-        field('GPU 数量（卡）', [
+        field('GPU 数量', [
           numberInput(draft.gpuCount, { min: '1', max: '12', step: '1' }, (gpuCount) =>
             app.updateDraft({ gpuCount }),
           ),
         ]),
         regionField(state, catalog),
-        field('每小时价格上限（元/时）', [
+        field('价格上限（元/时）', [
           numberInput(draft.maxHourlyYuan, { min: '0', step: '0.01' }, (maxHourlyYuan) =>
             app.updateDraft({ maxHourlyYuan }),
           ),
           h('div', {
             class: 'hint',
-            text: '指整台实例（全部 GPU）每小时的实付价格，已含会员折扣，不含数据盘费用。创建前以平台价格预览为准。',
+            text: '全部 GPU 合计，含会员折扣，不含数据盘费用。',
           }),
         ]),
         imageField(state, catalog),
-        field('数据盘扩容：额外增加的容量（GB）', [
+        field('数据盘扩容（GB）', [
           numberInput(draft.expandGb, { min: '0', step: '1' }, (expandGb) => app.updateDraft({ expandGb })),
           h('div', { class: 'hint warn', text: EXPAND_MEANING }),
           h('div', { class: 'hint', text: EXPAND_RULES }),
-          h('div', { class: 'hint', text: EXPAND_FEE_NOTE }),
         ]),
         field(`监测间隔（秒，${MIN_INTERVAL_SEC}～${MAX_INTERVAL_SEC}）`, [
           numberInput(
@@ -283,6 +272,7 @@ export const mountPanel = (app: App, log: Log, hostId: string, startCollapsed: b
     const locked = active || state.busy
     form.disabled = locked
     startButton.disabled = locked
+    startNotice.hidden = active
     pauseButton.disabled = runner.phase !== 'monitoring' && runner.phase !== 'paused'
     pauseButton.textContent = runner.phase === 'paused' ? '继续' : '暂停'
     stopButton.disabled = !active
@@ -312,9 +302,6 @@ export const mountPanel = (app: App, log: Log, hostId: string, startCollapsed: b
       const { outcome } = runner
       children.push(
         h('div', { class: outcome.mayBeBilling ? 'outcome billing' : 'outcome' }, [
-          ...(outcome.mayBeBilling
-            ? [h('div', { class: 'danger', text: '注意：实例已存在或可能已存在，可能正在计费。' })]
-            : []),
           pairList(outcomePairs(outcome)),
         ]),
       )
@@ -323,11 +310,11 @@ export const mountPanel = (app: App, log: Log, hostId: string, startCollapsed: b
       children.push(
         h('div', { class: 'errors' }, [
           h('div', {
-            text: '上一次任务有一个创建请求没有得到确认（例如页面被刷新）。请先到 AutoDL 控制台的实例列表核对是否多了一台实例，它可能正在计费。',
+            text: '上次任务的创建请求没有确认结果，可能已创建实例并在计费。请到控制台的实例列表核对。',
           }),
           h('button', {
             class: 'small',
-            text: '我已核对，清除核对标记',
+            text: '我已核对，清除标记',
             on: { click: () => app.clearPendingCreate() },
           }),
         ]),

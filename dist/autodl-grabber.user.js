@@ -1250,7 +1250,7 @@
       for (; ; ) {
         if (task.stopRequested) {
           finish(task, "stopped", {
-            headline: task.createsSent > 0 ? "\u5DF2\u505C\u6B62\u3002\u5DF2\u53D1\u51FA\u7684\u521B\u5EFA\u8BF7\u6C42\u7ECF\u6838\u5BF9\u6CA1\u6709\u751F\u6210\u5B9E\u4F8B\u3002" : "\u5DF2\u505C\u6B62\u3002\u6CA1\u6709\u53D1\u51FA\u521B\u5EFA\u8BF7\u6C42\uFF0C\u6CA1\u6709\u521B\u5EFA\u5B9E\u4F8B\u3002",
+            headline: task.createsSent > 0 ? "\u5DF2\u53D1\u51FA\u7684\u521B\u5EFA\u8BF7\u6C42\u7ECF\u6838\u5BF9\u6CA1\u6709\u751F\u6210\u5B9E\u4F8B\u3002" : "\u672A\u521B\u5EFA\u5B9E\u4F8B\u3002",
             instance: null,
             machine: null,
             quote: null,
@@ -1263,7 +1263,7 @@
           await task.gate.wait();
           continue;
         }
-        set({ phase: "monitoring", detail: `\u76D1\u6D4B\u4E2D\uFF0C\u6BCF ${plan.intervalMs / 1e3} \u79D2\u68C0\u67E5\u4E00\u6B21` });
+        set({ phase: "monitoring", detail: `\u6BCF ${plan.intervalMs / 1e3} \u79D2\u68C0\u67E5\u4E00\u6B21` });
         const result = await poll(task);
         if (result === "finished") return;
         if (result === "rest" && !task.stopRequested && task.pauseReason === null)
@@ -1275,7 +1275,7 @@
       if (stored === null) return null;
       const fresh = instances.filter((instance) => !stored.knownInstanceIds.includes(instance.uuid));
       if (fresh.length > 0)
-        return `\u4E0A\u4E00\u6B21\u4EFB\u52A1\u53D1\u51FA\u7684\u521B\u5EFA\u8BF7\u6C42\u53EF\u80FD\u5DF2\u6210\u529F\uFF1A\u5B9E\u4F8B\u5217\u8868\u4E2D\u51FA\u73B0\u4E86\u65B0\u5B9E\u4F8B ${fresh.map((instance) => instance.uuid).join("\u3001")}\uFF08\u53EF\u80FD\u6B63\u5728\u8BA1\u8D39\uFF09\u3002\u8BF7\u5148\u5230\u63A7\u5236\u53F0\u6838\u5BF9\uFF0C\u786E\u8BA4\u540E\u70B9\u51FB\u201C\u6E05\u9664\u6838\u5BF9\u6807\u8BB0\u201D\u518D\u542F\u52A8\u3002`;
+        return `\u4E0A\u4E00\u6B21\u4EFB\u52A1\u53D1\u51FA\u7684\u521B\u5EFA\u8BF7\u6C42\u53EF\u80FD\u5DF2\u6210\u529F\uFF1A\u5B9E\u4F8B\u5217\u8868\u4E2D\u51FA\u73B0\u4E86\u65B0\u5B9E\u4F8B ${fresh.map((instance) => instance.uuid).join("\u3001")}\uFF08\u53EF\u80FD\u6B63\u5728\u8BA1\u8D39\uFF09\u3002\u8BF7\u5148\u5230\u63A7\u5236\u53F0\u6838\u5BF9\uFF0C\u518D\u70B9\u51FB\u201C\u6211\u5DF2\u6838\u5BF9\uFF0C\u6E05\u9664\u6807\u8BB0\u201D\u540E\u542F\u52A8\u3002`;
       const remaining = PENDING_WINDOW_MS - (Date.now() - stored.sentAt);
       if (remaining > 0)
         return `\u4E0A\u4E00\u6B21\u521B\u5EFA\u8BF7\u6C42\u7684\u7ED3\u679C\u4ECD\u5728\u6838\u5BF9\u671F\u5185\uFF0C\u8BF7\u7EA6 ${Math.ceil(remaining / 1e3)} \u79D2\u540E\u518D\u542F\u52A8`;
@@ -1284,9 +1284,9 @@
     };
     const start = async (plan) => {
       if (ACTIVE_PHASES.includes(state.phase)) return "\u4EFB\u52A1\u5DF2\u5728\u8FD0\u884C\u4E2D";
-      set({ phase: "starting", detail: "\u6B63\u5728\u542F\u52A8", polls: 0, outcome: null });
+      set({ phase: "starting", detail: "", polls: 0, outcome: null });
       const refuse = (message) => {
-        set({ phase: "idle", detail: message });
+        set({ phase: "idle", detail: "" });
         log.add("warn", `\u672A\u80FD\u542F\u52A8\uFF1A${message}`);
         return message;
       };
@@ -1378,9 +1378,7 @@
     const warnings = [];
     if (!privateImages.ok) warnings.push(`\u65E0\u6CD5\u8BFB\u53D6\u81EA\u5B9A\u4E49\u955C\u50CF\u5217\u8868\uFF1A${describeFailure(privateImages.failure)}`);
     if (!memberLevel.ok)
-      warnings.push(
-        `\u65E0\u6CD5\u8BFB\u53D6\u4F1A\u5458\u7B49\u7EA7\uFF0C\u7B5B\u9009\u65F6\u6309\u4E3B\u673A\u539F\u4EF7\u4F30\u7B97\uFF08\u521B\u5EFA\u524D\u4ECD\u4EE5\u5E73\u53F0\u9884\u89C8\u4EF7\u4E3A\u51C6\uFF09\uFF1A${describeFailure(memberLevel.failure)}`
-      );
+      warnings.push(`\u65E0\u6CD5\u8BFB\u53D6\u4F1A\u5458\u7B49\u7EA7\uFF0C\u7B5B\u9009\u65F6\u6309\u539F\u4EF7\u8BA1\u7B97\uFF1A${describeFailure(memberLevel.failure)}`);
     return ok({
       catalog: {
         regions: regions.value,
@@ -1449,11 +1447,11 @@
       start: async () => {
         if (!idle()) return;
         if (state.catalog === null) {
-          set({ errors: ["\u5730\u533A\u3001GPU \u548C\u955C\u50CF\u5217\u8868\u5C1A\u672A\u52A0\u8F7D\uFF0C\u8BF7\u5148\u70B9\u51FB\u201C\u5237\u65B0\u5217\u8868\u201D"] });
+          set({ errors: ["\u5217\u8868\u5C1A\u672A\u52A0\u8F7D\uFF0C\u8BF7\u70B9\u51FB\u201C\u5237\u65B0\u5217\u8868\u201D"] });
           return;
         }
         if (!deps.tabLockSupported) {
-          set({ errors: ["\u5F53\u524D\u6D4F\u89C8\u5668\u4E0D\u652F\u6301 Web Locks\uFF0C\u65E0\u6CD5\u4FDD\u8BC1\u591A\u6807\u7B7E\u9875\u4E0D\u91CD\u590D\u521B\u5EFA\uFF0C\u5DF2\u62D2\u7EDD\u542F\u52A8"] });
+          set({ errors: ["\u5F53\u524D\u6D4F\u89C8\u5668\u4E0D\u652F\u6301 Web Locks\uFF0C\u65E0\u6CD5\u9632\u6B62\u591A\u4E2A\u6807\u7B7E\u9875\u91CD\u590D\u521B\u5EFA\uFF0C\u672A\u542F\u52A8"] });
           return;
         }
         const built = buildPlan(state.draft, state.catalog);
@@ -1472,7 +1470,7 @@
       clearPendingCreate: () => {
         if (!idle()) return;
         pending.clear();
-        log.add("warn", "\u5DF2\u6309\u4F60\u7684\u786E\u8BA4\u6E05\u9664\u201C\u672A\u786E\u8BA4\u7684\u521B\u5EFA\u8BF7\u6C42\u201D\u6807\u8BB0");
+        log.add("warn", "\u5DF2\u6E05\u9664\u672A\u786E\u8BA4\u7684\u521B\u5EFA\u8BF7\u6C42\u6807\u8BB0");
         set({ pendingCreate: false, errors: [] });
       }
     };
@@ -1956,10 +1954,9 @@
   };
 
   // src/ui/format.ts
-  var EXPAND_MEANING = "\u586B\u5199\u7684\u662F\u5728\u4E3B\u673A\u81EA\u5E26\u7684\u514D\u8D39\u6570\u636E\u76D8\u4E4B\u5916\u201C\u989D\u5916\u589E\u52A0\u201D\u7684\u4ED8\u8D39\u5BB9\u91CF\uFF0C\u4E0D\u662F\u6269\u5BB9\u540E\u7684\u603B\u5BB9\u91CF\uFF08\u603B\u5BB9\u91CF = \u514D\u8D39\u6570\u636E\u76D8 + \u6B64\u5904\u586B\u5199\u7684\u5927\u5C0F\uFF09\u3002";
-  var EXPAND_RULES = "\u89C4\u5219\u4E0E AutoDL \u521B\u5EFA\u9875\u4E00\u81F4\uFF1A\u6574\u6570 GB\uFF0C\u6700\u5C0F 0\uFF080 \u8868\u793A\u4E0D\u6269\u5BB9\uFF09\uFF0C\u6B65\u957F 1\uFF0C\u4E0A\u9650\u4E3A\u6240\u9009\u4E3B\u673A\u7684\u201C\u53EF\u6269\u5BB9\u201D\u7A7A\u95F4\u3002\u53EF\u6269\u5BB9\u7A7A\u95F4\u4E0D\u8DB3\u7684\u4E3B\u673A\u4F1A\u88AB\u8DF3\u8FC7\uFF0C\u4E0D\u4F1A\u6539\u7528\u66F4\u5C0F\u7684\u5BB9\u91CF\u3002";
-  var START_NOTICE = "\u70B9\u51FB\u201C\u5F00\u59CB\u81EA\u52A8\u62A2\u673A\u201D\u540E\u7ACB\u5373\u5F00\u59CB\u76D1\u6D4B\uFF0C\u4E0D\u518D\u5F39\u51FA\u786E\u8BA4\u3002\u53D1\u73B0\u7B26\u5408\u6761\u4EF6\u7684\u4E3B\u673A\u4F1A\u76F4\u63A5\u521B\u5EFA\u5E76\u5F00\u673A\u4E00\u53F0\u6309\u91CF\u8BA1\u8D39\u5B9E\u4F8B\uFF0C\u968F\u5373\u5F00\u59CB\u8BA1\u8D39\uFF1B\u4E00\u6B21\u4EFB\u52A1\u6700\u591A\u521B\u5EFA\u4E00\u53F0\u3002";
-  var EXPAND_FEE_NOTE = "\u6269\u5BB9\u8D39\u7528\uFF1A\u627E\u5230\u4E3B\u673A\u540E\uFF0C\u5E73\u53F0\u7ED9\u51FA\u7684\u9884\u89C8\u4EF7\u4F1A\u5199\u5165\u8FD0\u884C\u65E5\u5FD7\u5E76\u663E\u793A\u5728\u7ED3\u679C\u91CC\uFF1B\u53D6\u4E0D\u5230\u65F6\u663E\u793A\u201C\u672A\u77E5\u201D\u3002\u6309\u91CF\u8BA1\u8D39\u5B9E\u4F8B\u7684\u4ED8\u8D39\u6570\u636E\u76D8\u6309\u65E5\u6263\u8D39\uFF0C\u5173\u673A\u671F\u95F4\u4E5F\u8BA1\u8D39\u3002";
+  var EXPAND_MEANING = "\u514D\u8D39\u6570\u636E\u76D8\u4E4B\u5916\u989D\u5916\u4ED8\u8D39\u7684\u5BB9\u91CF\uFF0C\u4E0D\u662F\u603B\u5BB9\u91CF\u3002\u4ED8\u8D39\u90E8\u5206\u6309\u65E5\u6263\u8D39\uFF0C\u5173\u673A\u671F\u95F4\u4E5F\u6263\u3002";
+  var EXPAND_RULES = "\u53EF\u6269\u5BB9\u7A7A\u95F4\u4E0D\u8DB3\u7684\u4E3B\u673A\u4F1A\u88AB\u8DF3\u8FC7\u3002";
+  var START_NOTICE = "\u53D1\u73B0\u7B26\u5408\u6761\u4EF6\u7684\u4E3B\u673A\u540E\u76F4\u63A5\u521B\u5EFA\u5E76\u5F00\u673A\uFF0C\u7ACB\u5373\u5F00\u59CB\u8BA1\u8D39\uFF0C\u4E0D\u518D\u786E\u8BA4\u3002\u6BCF\u6B21\u4EFB\u52A1\u6700\u591A\u521B\u5EFA\u4E00\u53F0\u3002";
   var PHASE_LABELS = {
     idle: "\u672A\u5F00\u59CB",
     starting: "\u6B63\u5728\u542F\u52A8",
@@ -1989,21 +1986,21 @@
           "\u6570\u636E\u76D8",
           free === void 0 ? `\u4ED8\u8D39\u6269\u5BB9 ${bytesToGb(instance.expandBytes)} GB` : `\u514D\u8D39 ${formatGb(free)} + \u4ED8\u8D39\u6269\u5BB9 ${formatGb(instance.expandBytes)} = \u5171 ${formatGb(total)}`
         ],
-        ["\u5B9E\u4F8B\u8D39\u7528", `${formatYuan(instance.hourlyMilli)}/\u65F6\uFF08\u5B9E\u4F8B\u5217\u8868\u8FD4\u56DE\u7684\u5B9E\u4ED8\u5355\u4EF7\uFF09`]
+        ["\u5B9E\u4F8B\u8D39\u7528", `${formatYuan(instance.hourlyMilli)}/\u65F6`]
       );
     } else if (machine !== null) {
       pairs.push(
         ["\u76EE\u6807\u4E3B\u673A", `${machine.regionName} / ${machine.alias}\uFF08${machine.id}\uFF09`],
         ["GPU", machine.gpuName]
       );
-      if (quote !== null) pairs.push(["\u5B9E\u4F8B\u8D39\u7528", `${formatYuan(quote.hourlyMilli)}/\u65F6\uFF08\u5E73\u53F0\u9884\u89C8\u4EF7\uFF09`]);
+      if (quote !== null) pairs.push(["\u5B9E\u4F8B\u8D39\u7528", `${formatYuan(quote.hourlyMilli)}/\u65F6\uFF08\u9884\u89C8\u4EF7\uFF09`]);
     }
     if (quote !== null)
       pairs.push([
         "\u6570\u636E\u76D8\u8D39\u7528",
-        quote.expandBytes === 0 ? "\u65E0\uFF08\u672A\u6269\u5BB9\uFF09" : `${formatYuan(quote.diskDailyMilli)}/\u65E5\uFF08\u521B\u5EFA\u524D\u7684\u5E73\u53F0\u9884\u89C8\u4EF7\uFF09`
+        quote.expandBytes === 0 ? "\u672A\u6269\u5BB9" : `${formatYuan(quote.diskDailyMilli)}/\u65E5\uFF08\u9884\u89C8\u4EF7\uFF09`
       ]);
-    else if (instance !== null) pairs.push(["\u6570\u636E\u76D8\u8D39\u7528", "\u672A\u77E5\uFF08\u6CA1\u6709\u53D6\u5F97\u5E73\u53F0\u9884\u89C8\u4EF7\uFF09\uFF0C\u8BF7\u5230\u63A7\u5236\u53F0\u67E5\u770B"]);
+    else if (instance !== null) pairs.push(["\u6570\u636E\u76D8\u8D39\u7528", "\u672A\u77E5\uFF0C\u8BF7\u5230\u63A7\u5236\u53F0\u67E5\u770B"]);
     return pairs;
   };
 
@@ -2136,6 +2133,11 @@ button.stop { border-color: #f0b4ae; color: #b42318; }
       on: { click: () => app.getState().runner.phase === "paused" ? app.resume() : app.pause() }
     });
     const stopButton = h("button", { class: "stop", text: "\u505C\u6B62", on: { click: () => app.stop() } });
+    const startNotice = h("div", {
+      class: "hint warn",
+      attrs: { style: "margin-top:12px" },
+      text: START_NOTICE
+    });
     const status = h("div");
     const logBox = h("div", { class: "log" });
     panel.append(
@@ -2143,7 +2145,7 @@ button.stop { border-color: #f0b4ae; color: #b42318; }
       h("div", { class: "body" }, [
         form,
         errors,
-        h("div", { class: "hint warn", attrs: { style: "margin-top:12px" }, text: START_NOTICE }),
+        startNotice,
         h("div", { class: "actions", attrs: { style: "margin-top:6px" } }, [
           startButton,
           pauseButton,
@@ -2172,7 +2174,7 @@ button.stop { border-color: #f0b4ae; color: #b42318; }
         input.checked = state.draft.gpuNames.includes(name);
         return h("label", { class: "check" }, [input, label]);
       };
-      return field("GPU \u578B\u53F7\uFF08\u53EF\u591A\u9009\uFF0C\u4EFB\u4E00\u578B\u53F7\u6709\u8D27\u5373\u53EF\uFF09", [
+      return field("GPU \u578B\u53F7", [
         h("div", { class: "box grid" }, [
           ...stale.map((name) => checkbox(name, `${name}\uFF08\u5DF2\u4E0D\u5B58\u5728\uFF09`)),
           ...known.map((name) => checkbox(name, name))
@@ -2206,7 +2208,7 @@ button.stop { border-color: #f0b4ae; color: #b42318; }
         ]);
       };
       const others = catalog.regions.filter((region) => !selected.includes(region.id));
-      return field("\u5730\u533A\uFF08\u52FE\u9009\u540E\u6309\u5E8F\u53F7\u51B3\u5B9A\u4F18\u5148\u7EA7\uFF0C1 \u6700\u4F18\u5148\uFF09", [
+      return field("\u5730\u533A\uFF08\u5E8F\u53F7\u8D8A\u5C0F\u8D8A\u4F18\u5148\uFF09", [
         h("div", { class: "box" }, [...selected.map(row), ...others.map((region) => row(region.id, -1))])
       ]);
     };
@@ -2214,7 +2216,7 @@ button.stop { border-color: #f0b4ae; color: #b42318; }
       const { imageKind, imageUuid } = state.draft;
       const images = imageKind === "official" ? catalog.officialImages : catalog.privateImages;
       const known = images.some((image) => image.uuid === imageUuid);
-      const placeholder = images.length === 0 ? "\uFF08\u6CA1\u6709\u53EF\u7528\u955C\u50CF\uFF09" : imageUuid !== "" && !known ? "\u539F\u5148\u9009\u62E9\u7684\u955C\u50CF\u5DF2\u4E0D\u5B58\u5728\uFF0C\u8BF7\u91CD\u65B0\u9009\u62E9" : "\u8BF7\u9009\u62E9\u955C\u50CF";
+      const placeholder = images.length === 0 ? "\u6CA1\u6709\u53EF\u7528\u955C\u50CF" : imageUuid !== "" && !known ? "\u539F\u955C\u50CF\u5DF2\u4E0D\u5B58\u5728\uFF0C\u8BF7\u91CD\u65B0\u9009\u62E9" : "\u8BF7\u9009\u62E9\u955C\u50CF";
       return field("\u955C\u50CF", [
         h("div", { class: "row" }, [
           select(
@@ -2232,11 +2234,7 @@ button.stop { border-color: #f0b4ae; color: #b42318; }
             known ? imageUuid : "",
             (uuid) => app.updateDraft({ imageUuid: uuid })
           )
-        ]),
-        h("div", {
-          class: "hint",
-          text: "\u5B98\u65B9\u955C\u50CF\u662F AutoDL \u7684\u57FA\u7840\u955C\u50CF\uFF1B\u81EA\u5B9A\u4E49\u955C\u50CF\u662F\u4F60\u5728\u201C\u6211\u7684\u955C\u50CF\u201D\u91CC\u4FDD\u5B58\u7684\u955C\u50CF\u3002\u955C\u50CF\u7684 CUDA \u7248\u672C\u4E0E\u4E3B\u673A\u4E0D\u517C\u5BB9\u65F6\u4F1A\u8DF3\u8FC7\u8BE5\u4E3B\u673A\u3002"
-        })
+        ])
       ]);
     };
     const renderForm = (state) => {
@@ -2247,14 +2245,14 @@ button.stop { border-color: #f0b4ae; color: #b42318; }
           h("div", { class: "field" }, [
             h("div", {
               class: state.catalogError === null ? "hint" : "danger",
-              text: state.catalogError === null ? "\u6B63\u5728\u8BFB\u53D6\u5730\u533A\u3001GPU \u548C\u955C\u50CF\u5217\u8868\u2026" : `\u8BFB\u53D6\u5217\u8868\u5931\u8D25\uFF1A${state.catalogError}`
+              text: state.catalogError === null ? "\u6B63\u5728\u52A0\u8F7D\u5217\u8868\u2026" : `\u8BFB\u53D6\u5217\u8868\u5931\u8D25\uFF1A${state.catalogError}`
             })
           ])
         );
       } else {
         children.push(
           gpuField(state, catalog),
-          field("GPU \u6570\u91CF\uFF08\u5361\uFF09", [
+          field("GPU \u6570\u91CF", [
             numberInput(
               draft.gpuCount,
               { min: "1", max: "12", step: "1" },
@@ -2262,7 +2260,7 @@ button.stop { border-color: #f0b4ae; color: #b42318; }
             )
           ]),
           regionField(state, catalog),
-          field("\u6BCF\u5C0F\u65F6\u4EF7\u683C\u4E0A\u9650\uFF08\u5143/\u65F6\uFF09", [
+          field("\u4EF7\u683C\u4E0A\u9650\uFF08\u5143/\u65F6\uFF09", [
             numberInput(
               draft.maxHourlyYuan,
               { min: "0", step: "0.01" },
@@ -2270,15 +2268,14 @@ button.stop { border-color: #f0b4ae; color: #b42318; }
             ),
             h("div", {
               class: "hint",
-              text: "\u6307\u6574\u53F0\u5B9E\u4F8B\uFF08\u5168\u90E8 GPU\uFF09\u6BCF\u5C0F\u65F6\u7684\u5B9E\u4ED8\u4EF7\u683C\uFF0C\u5DF2\u542B\u4F1A\u5458\u6298\u6263\uFF0C\u4E0D\u542B\u6570\u636E\u76D8\u8D39\u7528\u3002\u521B\u5EFA\u524D\u4EE5\u5E73\u53F0\u4EF7\u683C\u9884\u89C8\u4E3A\u51C6\u3002"
+              text: "\u5168\u90E8 GPU \u5408\u8BA1\uFF0C\u542B\u4F1A\u5458\u6298\u6263\uFF0C\u4E0D\u542B\u6570\u636E\u76D8\u8D39\u7528\u3002"
             })
           ]),
           imageField(state, catalog),
-          field("\u6570\u636E\u76D8\u6269\u5BB9\uFF1A\u989D\u5916\u589E\u52A0\u7684\u5BB9\u91CF\uFF08GB\uFF09", [
+          field("\u6570\u636E\u76D8\u6269\u5BB9\uFF08GB\uFF09", [
             numberInput(draft.expandGb, { min: "0", step: "1" }, (expandGb) => app.updateDraft({ expandGb })),
             h("div", { class: "hint warn", text: EXPAND_MEANING }),
-            h("div", { class: "hint", text: EXPAND_RULES }),
-            h("div", { class: "hint", text: EXPAND_FEE_NOTE })
+            h("div", { class: "hint", text: EXPAND_RULES })
           ]),
           field(`\u76D1\u6D4B\u95F4\u9694\uFF08\u79D2\uFF0C${MIN_INTERVAL_SEC}\uFF5E${MAX_INTERVAL_SEC}\uFF09`, [
             numberInput(
@@ -2307,6 +2304,7 @@ button.stop { border-color: #f0b4ae; color: #b42318; }
       const locked = active || state.busy;
       form.disabled = locked;
       startButton.disabled = locked;
+      startNotice.hidden = active;
       pauseButton.disabled = runner.phase !== "monitoring" && runner.phase !== "paused";
       pauseButton.textContent = runner.phase === "paused" ? "\u7EE7\u7EED" : "\u6682\u505C";
       stopButton.disabled = !active;
@@ -2332,7 +2330,6 @@ button.stop { border-color: #f0b4ae; color: #b42318; }
         const { outcome } = runner;
         children.push(
           h("div", { class: outcome.mayBeBilling ? "outcome billing" : "outcome" }, [
-            ...outcome.mayBeBilling ? [h("div", { class: "danger", text: "\u6CE8\u610F\uFF1A\u5B9E\u4F8B\u5DF2\u5B58\u5728\u6216\u53EF\u80FD\u5DF2\u5B58\u5728\uFF0C\u53EF\u80FD\u6B63\u5728\u8BA1\u8D39\u3002" })] : [],
             pairList(outcomePairs(outcome))
           ])
         );
@@ -2341,11 +2338,11 @@ button.stop { border-color: #f0b4ae; color: #b42318; }
         children.push(
           h("div", { class: "errors" }, [
             h("div", {
-              text: "\u4E0A\u4E00\u6B21\u4EFB\u52A1\u6709\u4E00\u4E2A\u521B\u5EFA\u8BF7\u6C42\u6CA1\u6709\u5F97\u5230\u786E\u8BA4\uFF08\u4F8B\u5982\u9875\u9762\u88AB\u5237\u65B0\uFF09\u3002\u8BF7\u5148\u5230 AutoDL \u63A7\u5236\u53F0\u7684\u5B9E\u4F8B\u5217\u8868\u6838\u5BF9\u662F\u5426\u591A\u4E86\u4E00\u53F0\u5B9E\u4F8B\uFF0C\u5B83\u53EF\u80FD\u6B63\u5728\u8BA1\u8D39\u3002"
+              text: "\u4E0A\u6B21\u4EFB\u52A1\u7684\u521B\u5EFA\u8BF7\u6C42\u6CA1\u6709\u786E\u8BA4\u7ED3\u679C\uFF0C\u53EF\u80FD\u5DF2\u521B\u5EFA\u5B9E\u4F8B\u5E76\u5728\u8BA1\u8D39\u3002\u8BF7\u5230\u63A7\u5236\u53F0\u7684\u5B9E\u4F8B\u5217\u8868\u6838\u5BF9\u3002"
             }),
             h("button", {
               class: "small",
-              text: "\u6211\u5DF2\u6838\u5BF9\uFF0C\u6E05\u9664\u6838\u5BF9\u6807\u8BB0",
+              text: "\u6211\u5DF2\u6838\u5BF9\uFF0C\u6E05\u9664\u6807\u8BB0",
               on: { click: () => app.clearPendingCreate() }
             })
           ])
@@ -2410,14 +2407,9 @@ button.stop { border-color: #f0b4ae; color: #b42318; }
       requestNotifications
     });
     mountPanel(app, log, HOST_ID, !RENT_PATHS.some((prefix) => window.location.pathname.startsWith(prefix)));
-    log.add("info", "\u811A\u672C\u5DF2\u52A0\u8F7D\u3002\u5237\u65B0\u9875\u9762\u540E\u914D\u7F6E\u4F1A\u4FDD\u7559\uFF0C\u4F46\u4E0D\u4F1A\u81EA\u52A8\u6062\u590D\u4EFB\u52A1\u3002");
-    if (pending.load() !== null) log.add("warn", "\u68C0\u6D4B\u5230\u4E0A\u4E00\u6B21\u4EFB\u52A1\u6709\u672A\u786E\u8BA4\u7684\u521B\u5EFA\u8BF7\u6C42\uFF0C\u8BF7\u5148\u5230\u63A7\u5236\u53F0\u6838\u5BF9\u5B9E\u4F8B\u5217\u8868");
     document.addEventListener("visibilitychange", () => {
       if (document.hidden && isActive(app.getState().runner.phase))
-        log.add(
-          "warn",
-          "\u672C\u6807\u7B7E\u9875\u5DF2\u8F6C\u5165\u540E\u53F0\uFF0C\u6D4F\u89C8\u5668\u53EF\u80FD\u5927\u5E45\u5EF6\u8FDF\u6216\u6682\u505C\u76D1\u6D4B\u3002\u8BF7\u8BA9\u672C\u9875\u4FDD\u6301\u5728\u524D\u53F0\u53EF\u89C1\uFF08\u5EFA\u8BAE\u5355\u72EC\u5F00\u4E00\u4E2A\u7A97\u53E3\uFF09"
-        );
+        log.add("warn", "\u9875\u9762\u5DF2\u8F6C\u5165\u540E\u53F0\uFF0C\u6D4F\u89C8\u5668\u53EF\u80FD\u6682\u505C\u76D1\u6D4B\u3002\u8BF7\u8BA9\u672C\u9875\u4FDD\u6301\u53EF\u89C1\uFF0C\u53EF\u5355\u72EC\u653E\u4E00\u4E2A\u7A97\u53E3");
     });
     void app.reloadCatalog();
   };

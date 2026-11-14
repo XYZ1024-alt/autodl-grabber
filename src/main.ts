@@ -43,15 +43,10 @@ const mount = () => {
   })
 
   mountPanel(app, log, HOST_ID, !RENT_PATHS.some((prefix) => window.location.pathname.startsWith(prefix)))
-  log.add('info', '脚本已加载。刷新页面后配置会保留，但不会自动恢复任务。')
-  if (pending.load() !== null) log.add('warn', '检测到上一次任务有未确认的创建请求，请先到控制台核对实例列表')
   // Browsers slow down or suspend timers of hidden tabs, which delays monitoring.
   document.addEventListener('visibilitychange', () => {
     if (document.hidden && isActive(app.getState().runner.phase))
-      log.add(
-        'warn',
-        '本标签页已转入后台，浏览器可能大幅延迟或暂停监测。请让本页保持在前台可见（建议单独开一个窗口）',
-      )
+      log.add('warn', '页面已转入后台，浏览器可能暂停监测。请让本页保持可见，可单独放一个窗口')
   })
   void app.reloadCatalog()
 }

@@ -20,9 +20,7 @@ export const loadCatalog = async (api: AutodlApi): Promise<Result<CatalogLoad>> 
   const warnings: string[] = []
   if (!privateImages.ok) warnings.push(`无法读取自定义镜像列表：${describeFailure(privateImages.failure)}`)
   if (!memberLevel.ok)
-    warnings.push(
-      `无法读取会员等级，筛选时按主机原价估算（创建前仍以平台预览价为准）：${describeFailure(memberLevel.failure)}`,
-    )
+    warnings.push(`无法读取会员等级，筛选时按原价计算：${describeFailure(memberLevel.failure)}`)
   return ok({
     catalog: {
       regions: regions.value,
